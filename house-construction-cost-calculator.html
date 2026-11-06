@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-itunes-app" content="app-id=6796905803">
+<title>House Construction Cost Calculator — Ledger</title>
+<meta name="description" content="Estimate house construction in seconds. Presets for Basic, Standard or Premium — then fine-tune area, floors and add-ons. Track the build in Ledger.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4EEE2; --paper2: #EDE5D5; --paper3: #E6DCC8;
+  --ink: #2B2722; --ink2: #5A5346; --ink3: #8A8070;
+  --hairline: #D9CCB4; --river: #5C7A99; --clay: #B8714F;
+  --shadow: 0 8px 28px rgba(43,39,34,0.08); --shadow-sm: 0 2px 10px rgba(43,39,34,0.06);
+  --radius: 18px; --safe-b: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #17150F; --paper2: #201D16; --paper3: #2A261E;
+    --ink: #EFE6D4; --ink2: #C9BDA6; --ink3: #8F8574;
+    --hairline: #2E2A22; --river: #8FAACB; --clay: #D4906C;
+    --shadow: 0 8px 28px rgba(0,0,0,0.35); --shadow-sm: 0 2px 10px rgba(0,0,0,0.25);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--paper); color: var(--ink); line-height: 1.55; font-size: 16px;
+  -webkit-font-smoothing: antialiased; padding-bottom: 88px;
+}
+h1,h2,h3,.brand,.num,.preset-title { font-family: 'Fraunces', Georgia, serif; font-weight: 550; }
+a { color: var(--river); text-underline-offset: 3px; }
+.nav {
+  max-width: 760px; margin: 0 auto; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 0.5px solid var(--hairline);
+}
+.brand { font-size: 20px; font-weight: 600; }
+.brand a { color: var(--ink); text-decoration: none; }
+.nav-links a { margin-left: 14px; font-size: 13px; color: var(--ink3); text-decoration: none; font-weight: 500; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 40px; }
+.eyebrow { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); font-weight: 600; margin: 0 0 8px; }
+h1 { font-size: clamp(28px, 6vw, 40px); line-height: 1.12; margin: 0 0 10px; font-weight: 550; }
+.lede { color: var(--ink2); margin: 0 0 8px; font-size: 16px; max-width: 38em; }
+.disclaimer-line {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--ink3); margin: 0 0 22px;
+}
+.tip {
+  position: relative; display: inline-flex; width: 18px; height: 18px;
+  border-radius: 50%; border: 1px solid var(--hairline); background: var(--paper2);
+  color: var(--ink2); font-size: 11px; font-weight: 700; align-items: center; justify-content: center;
+  cursor: help;
+}
+.tip:focus { outline: 2px solid var(--river); outline-offset: 2px; }
+.tip[data-tip]::after {
+  content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px);
+  transform: translateX(-50%); width: min(280px, 72vw); padding: 10px 12px;
+  background: var(--ink); color: var(--paper); border-radius: 10px; font-size: 12px;
+  font-weight: 400; line-height: 1.4; opacity: 0; pointer-events: none;
+  transition: opacity .15s; z-index: 20; text-align: left; letter-spacing: 0; text-transform: none;
+}
+.tip:hover::after, .tip:focus::after { opacity: 1; }
+
+.hero-total {
+  background: var(--paper2); border: 0.5px solid var(--hairline);
+  border-radius: 22px; padding: 22px; box-shadow: var(--shadow);
+  margin-bottom: 18px; position: relative; overflow: hidden;
+}
+.hero-total::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--clay), var(--river));
+}
+.hero-total .label { font-size: 12px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink3); font-weight: 600; }
+.hero-total .big {
+  font-family: 'Fraunces', Georgia, serif; font-size: clamp(40px, 10vw, 56px);
+  font-weight: 600; line-height: 1.05; margin: 6px 0 10px; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--ink2); font-size: 14px; }
+.hero-meta strong { color: var(--ink); font-weight: 600; }
+
+.presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 22px; }
+@media (max-width: 420px) {
+  .presets { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .preset { padding: 12px 8px; }
+  .preset-title { font-size: 15px; }
+  .preset-sub { font-size: 11px; }
+}
+.preset {
+  appearance: none; border: 1.5px solid var(--hairline); background: var(--paper);
+  border-radius: 16px; padding: 14px 12px; text-align: left; cursor: pointer;
+  color: var(--ink); box-shadow: var(--shadow-sm); font: inherit; transition: border-color .15s, background .15s;
+}
+.preset:hover { border-color: var(--clay); }
+.preset:focus-visible { outline: 2px solid var(--river); outline-offset: 2px; }
+.preset.active { border-color: var(--clay); background: color-mix(in srgb, var(--clay) 12%, var(--paper)); box-shadow: var(--shadow); }
+.preset-title { display: block; font-size: 17px; margin-bottom: 2px; }
+.preset-sub { display: block; font-size: 12px; color: var(--ink3); line-height: 1.35; }
+
+.card {
+  background: var(--paper2); border: 0.5px solid var(--hairline);
+  border-radius: var(--radius); padding: 18px; margin: 0 0 14px; box-shadow: var(--shadow-sm);
+}
+.card h2 { font-size: 18px; margin: 0 0 14px; font-weight: 550; }
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 10px; }
+.field-head label { font-size: 13px; font-weight: 600; color: var(--ink2); }
+.field-val { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+input[type="range"] {
+  width: 100%; height: 6px; appearance: none; background: var(--hairline); border-radius: 999px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--clay); border: 2px solid var(--paper); box-shadow: var(--shadow-sm); cursor: pointer;
+}
+.seg {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  background: var(--paper); padding: 4px; border-radius: 12px; border: 0.5px solid var(--hairline);
+}
+.seg button {
+  border: none; background: transparent; padding: 10px 6px; border-radius: 9px;
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); cursor: pointer;
+}
+.seg button.active { background: var(--ink); color: var(--paper); }
+.seg button:focus-visible { outline: 2px solid var(--river); outline-offset: 1px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border-radius: 14px; border: 1.5px solid var(--hairline); background: var(--paper);
+  font-size: 14px; font-weight: 500; cursor: pointer; user-select: none; color: var(--ink);
+}
+.chip input { width: 16px; height: 16px; accent-color: var(--clay); }
+.chip.on, .chip:has(input:checked) {
+  border-color: var(--clay); background: color-mix(in srgb, var(--clay) 14%, var(--paper));
+}
+.chip .amt { color: var(--ink3); font-size: 12px; font-weight: 600; margin-left: 4px; }
+.chip:focus-within { outline: 2px solid var(--river); outline-offset: 2px; }
+
+details.fine {
+  border-radius: var(--radius); border: 0.5px solid var(--hairline);
+  background: var(--paper2); margin: 0 0 14px; box-shadow: var(--shadow-sm);
+}
+details.fine > summary {
+  list-style: none; cursor: pointer; padding: 16px 18px; font-weight: 600; font-size: 15px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+details.fine > summary::-webkit-details-marker { display: none; }
+details.fine > summary::after { content: '+'; color: var(--ink3); font-size: 20px; }
+details.fine[open] > summary::after { content: '−'; }
+.fine-body { padding: 0 18px 16px; border-top: 0.5px solid var(--hairline); }
+.rate-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+  padding: 12px 0; border-bottom: 0.5px solid var(--hairline);
+}
+.rate-row:last-child { border-bottom: none; }
+.rate-row .name { font-weight: 600; font-size: 14px; }
+.rate-row .hint { font-size: 12px; color: var(--ink3); }
+.rate-row input[type="range"] { grid-column: 1 / -1; }
+.rate-amt { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 15px; }
+
+.result {
+  background: var(--paper); border: 0.5px solid var(--hairline);
+  border-radius: 22px; padding: 22px 20px 20px; margin: 8px 0 14px; box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.result::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--clay);
+}
+.result h2 { margin: 0 0 4px; font-size: 15px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink3); font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; }
+.result .rtotal {
+  font-family: 'Fraunces', Georgia, serif; font-size: 36px; font-weight: 600;
+  margin: 0 0 6px; font-variant-numeric: tabular-nums;
+}
+.result-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--ink2); margin-bottom: 16px; }
+.phases { display: flex; flex-direction: column; gap: 10px; }
+.phase {
+  display: grid; grid-template-columns: 110px 1fr 72px; gap: 10px; align-items: center; font-size: 13px;
+}
+.phase .nm { font-weight: 600; }
+.phase .track { height: 10px; background: var(--paper3); border-radius: 999px; overflow: hidden; }
+.phase .fill { height: 100%; border-radius: 999px; transition: width .4s ease; }
+.phase .amt { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink2); font-weight: 500; }
+
+.tips h2 { font-size: 18px; margin: 0 0 12px; }
+.tip-item {
+  display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 12px 0;
+  border-bottom: 0.5px solid var(--hairline); font-size: 14px; color: var(--ink2);
+}
+.tip-item:last-child { border-bottom: none; }
+.tip-n {
+  width: 28px; height: 28px; border-radius: 50%; background: color-mix(in srgb, var(--clay) 18%, var(--paper));
+  color: var(--clay); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.tip-item strong { color: var(--ink); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 18px; }
+.btn {
+  appearance: none; border: 1.5px solid var(--hairline); background: var(--paper);
+  color: var(--ink); border-radius: 12px; padding: 12px 16px; font: inherit;
+  font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: var(--shadow-sm);
+}
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn:focus-visible { outline: 2px solid var(--river); outline-offset: 2px; }
+.share-status { font-size: 13px; color: var(--clay); min-height: 1.2em; margin: 0 0 8px; }
+
+.cta {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--clay) 16%, var(--paper2)), var(--paper2));
+  border: 0.5px solid var(--hairline); border-radius: 22px; padding: 24px 22px;
+  text-align: center; box-shadow: var(--shadow); margin: 8px 0 28px;
+}
+.cta p { margin: 0 0 14px; font-size: 17px; color: var(--ink); line-height: 1.45; }
+.cta p .hl { font-family: 'Fraunces', Georgia, serif; font-weight: 600; }
+.cta .badge {
+  display: inline-block; padding: 14px 22px; border-radius: 14px;
+  background: var(--ink); color: var(--paper); font-weight: 600; text-decoration: none; font-size: 15px;
+}
+.cta .sub { margin-top: 12px; font-size: 13px; color: var(--ink3); }
+
+.sticky-bar {
+  position: fixed; left: 12px; right: 12px; bottom: calc(10px + var(--safe-b)); z-index: 40;
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  color: var(--paper); border-radius: 16px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: none; box-shadow: 0 10px 30px rgba(43,39,34,0.28);
+  padding: 12px 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.sticky-bar .s-label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: color-mix(in srgb, var(--paper) 65%, transparent); font-weight: 600; }
+.sticky-bar .s-total {
+  font-family: 'Fraunces', Georgia, serif; font-size: 22px; font-weight: 600;
+  font-variant-numeric: tabular-nums; line-height: 1.1; color: var(--paper);
+}
+.sticky-bar a {
+  flex-shrink: 0; background: var(--paper); color: var(--ink); text-decoration: none;
+  padding: 10px 14px; border-radius: 11px; font-size: 13px; font-weight: 600;
+}
+@media (min-width: 761px) { .sticky-bar { display: none; } body { padding-bottom: 0; } }
+
+footer {
+  max-width: 760px; margin: 0 auto; padding: 20px; border-top: 0.5px solid var(--hairline);
+  color: var(--ink3); font-size: 12px; text-align: center;
+}
+footer a { color: var(--ink3); }
+#shareCanvas { position: absolute; left: -9999px; top: 0; }
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Primary">
+  <span class="brand"><a href="index.html">Ledger</a></span>
+  <span class="nav-links">
+    <a href="wedding-budget-calculator.html">Wedding calc</a>
+    <a href="https://apps.apple.com/app/apple-store/id6796905803?pt=128885861&amp;ct=calc-house&amp;mt=8">App Store</a>
+  </span>
+</nav>
+
+<main class="wrap">
+  <p class="eyebrow">Free calculator · India</p>
+  <h1>Your house build cost, in five seconds</h1>
+  <p class="lede">Pick a quality band, set the area, toggle add-ons — see phases and where you could save.</p>
+  <p class="disclaimer-line">
+    Example ₹/sq ft rates you can edit
+    <button type="button" class="tip" data-tip="Basic / Standard / Premium ₹ per sq ft are round mid-range placeholders, not surveyed averages. Replace with your contractor’s rate. Not a BOQ or quote." aria-label="About these example rates">i</button>
+  </p>
+
+  <div class="presets" role="group" aria-label="Quality presets">
+    <button type="button" class="preset" data-preset="basic" id="p-basic">
+      <span class="preset-title">Basic</span>
+      <span class="preset-sub">~1,400 sq ft · ₹1,800/sq ft · lean add-ons</span>
+    </button>
+    <button type="button" class="preset active" data-preset="standard" id="p-standard">
+      <span class="preset-title">Standard</span>
+      <span class="preset-sub">~1,800 sq ft · ₹2,400/sq ft · kitchen + interiors</span>
+    </button>
+    <button type="button" class="preset" data-preset="premium" id="p-premium">
+      <span class="preset-title">Premium</span>
+      <span class="preset-sub">~2,400 sq ft · ₹3,500/sq ft · full add-ons</span>
+    </button>
+  </div>
+
+  <section class="hero-total" aria-live="polite">
+    <div class="label">Estimated total</div>
+    <div class="big" id="heroTotal">₹0</div>
+    <div class="hero-meta">
+      <span>Per sq ft <strong id="heroPer">₹0</strong></span>
+      <span>Built-up <strong id="heroArea">0</strong> sq ft</span>
+      <span>Floors <strong id="heroFloors">1</strong></span>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="basics-h">
+    <h2 id="basics-h">Basics</h2>
+    <div class="field">
+      <div class="field-head">
+        <label for="area">Built-up area</label>
+        <span class="field-val" id="areaVal">1,800 sq ft</span>
+      </div>
+      <input type="range" id="area" min="600" max="6000" step="50" value="1800" aria-valuetext="1800 square feet">
+    </div>
+    <div class="field">
+      <div class="field-head">
+        <label for="floors">Floors</label>
+        <span class="field-val" id="floorsVal">2</span>
+      </div>
+      <input type="range" id="floors" min="1" max="4" step="1" value="2" aria-valuetext="2 floors">
+    </div>
+    <div class="field">
+      <div class="field-head"><span id="tier-label">City tier</span></div>
+      <div class="seg" role="group" aria-labelledby="tier-label">
+        <button type="button" data-tier="1.25" aria-pressed="false">Tier 1</button>
+        <button type="button" data-tier="1" class="active" aria-pressed="true">Tier 2</button>
+        <button type="button" data-tier="0.85" aria-pressed="false">Tier 3</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="add-h">
+    <h2 id="add-h">Add-ons</h2>
+    <div class="chips" id="addons" role="group" aria-labelledby="add-h">
+      <label class="chip on"><input type="checkbox" data-id="interiors" data-cost="450000" checked> Interiors <span class="amt">₹4.5 L</span></label>
+      <label class="chip on"><input type="checkbox" data-id="kitchen" data-cost="250000" checked> Modular kitchen <span class="amt">₹2.5 L</span></label>
+      <label class="chip"><input type="checkbox" data-id="solar" data-cost="180000"> Solar <span class="amt">₹1.8 L</span></label>
+      <label class="chip"><input type="checkbox" data-id="borewell" data-cost="120000"> Borewell <span class="amt">₹1.2 L</span></label>
+    </div>
+  </section>
+
+  <details class="fine">
+    <summary>Fine-tune ₹ / sq ft rates</summary>
+    <div class="fine-body">
+      <div class="rate-row">
+        <div><div class="name" id="lbl-basic">Basic rate</div><div class="hint">example default</div></div>
+        <div class="rate-amt" id="disp-basic">₹1,800</div>
+        <input type="range" id="rateBasic" min="1000" max="5000" step="50" value="1800" aria-labelledby="lbl-basic">
+      </div>
+      <div class="rate-row">
+        <div><div class="name" id="lbl-std">Standard rate</div><div class="hint">example default</div></div>
+        <div class="rate-amt" id="disp-std">₹2,400</div>
+        <input type="range" id="rateStd" min="1000" max="6000" step="50" value="2400" aria-labelledby="lbl-std">
+      </div>
+      <div class="rate-row">
+        <div><div class="name" id="lbl-prem">Premium rate</div><div class="hint">example default</div></div>
+        <div class="rate-amt" id="disp-prem">₹3,500</div>
+        <input type="range" id="ratePrem" min="1500" max="8000" step="50" value="3500" aria-labelledby="lbl-prem">
+      </div>
+    </div>
+  </details>
+
+  <section class="result" id="resultCard" aria-labelledby="result-h">
+    <h2 id="result-h">Your estimate</h2>
+    <div class="rtotal" id="resultTotal">₹0</div>
+    <div class="result-meta">
+      <span>Per sq ft <strong id="resultPer">₹0</strong></span>
+      <span id="resultPreset">Standard</span>
+    </div>
+    <div class="phases" id="phases" role="list"></div>
+  </section>
+
+  <section class="card tips" aria-labelledby="save-h">
+    <h2 id="save-h">Where you could save</h2>
+    <div id="tips"></div>
+  </section>
+
+  <p class="share-status" id="shareStatus" role="status" aria-live="polite"></p>
+  <div class="actions">
+    <button type="button" class="btn primary" id="shareBtn">Save / share my estimate</button>
+    <button type="button" class="btn" id="copyLinkBtn">Copy link</button>
+  </div>
+
+  <section class="cta" aria-label="Get Ledger">
+    <p id="ctaText">Your house build has dozens of payments. Track every one in Ledger, free.</p>
+    <a class="badge" href="https://apps.apple.com/app/apple-store/id6796905803?pt=128885861&amp;ct=calc-house&amp;mt=8">Get Ledger on the App Store</a>
+    <p class="sub">A calm pool for the build · Private on your iPhone</p>
+  </section>
+</main>
+
+<div class="sticky-bar" aria-label="Live total">
+  <div>
+    <div class="s-label">Live total</div>
+    <div class="s-total" id="stickyTotal">₹0</div>
+  </div>
+  <a href="https://apps.apple.com/app/apple-store/id6796905803?pt=128885861&amp;ct=calc-house&amp;mt=8">Open Ledger</a>
+</div>
+
+<footer>© 2026 Ledger · <a href="wedding-budget-calculator.html">Wedding budget calculator</a></footer>
+<canvas id="shareCanvas" width="1080" height="1350" aria-hidden="true"></canvas>
+
+<script>
+const PHASES = [
+  { id: 'foundation', label: 'Foundation', pct: 0.15, color: '#B8714F' },
+  { id: 'structure', label: 'Structure', pct: 0.40, color: '#5C7A99' },
+  { id: 'finishing', label: 'Finishing', pct: 0.30, color: '#7A8F6A' },
+  { id: 'interiors', label: 'Interiors shell', pct: 0.15, color: '#8B6B9E' },
+];
+const PRESETS = {
+  basic: {
+    name: 'Basic', area: 1400, floors: 1, tier: 0.85, quality: 'basic',
+    addons: { interiors: false, kitchen: false, solar: false, borewell: true }
+  },
+  standard: {
+    name: 'Standard', area: 1800, floors: 2, tier: 1, quality: 'standard',
+    addons: { interiors: true, kitchen: true, solar: false, borewell: false }
+  },
+  premium: {
+    name: 'Premium', area: 2400, floors: 2, tier: 1.25, quality: 'premium',
+    addons: { interiors: true, kitchen: true, solar: true, borewell: true }
+  }
+};
+
+let state = { preset: 'standard', tier: 1, quality: 'standard', animTotal: 0 };
+let animRaf = null;
+
+function fmtLakh(n) {
+  n = Math.round(n);
+  if (n >= 1e7) return '₹' + (n / 1e7).toFixed(n >= 1e8 ? 1 : 2) + ' Cr';
+  if (n >= 1e5) {
+    const L = n / 1e5;
+    return '₹' + (L >= 10 ? L.toFixed(1) : L.toFixed(2)) + ' L';
+  }
+  return '₹' + n.toLocaleString('en-IN');
+}
+function fmtFull(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function fmtLakhNum(n) { return (Math.round(n) / 1e5).toFixed(Math.round(n) >= 1e6 ? 1 : 2); }
+
+['area','floors','rateBasic','rateStd','ratePrem'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => { calc(); });
+});
+document.getElementById('area').addEventListener('input', e => {
+  const v = +e.target.value;
+  document.getElementById('areaVal').textContent = v.toLocaleString('en-IN') + ' sq ft';
+  e.target.setAttribute('aria-valuetext', v + ' square feet');
+});
+document.getElementById('floors').addEventListener('input', e => {
+  document.getElementById('floorsVal').textContent = e.target.value;
+  e.target.setAttribute('aria-valuetext', e.target.value + ' floors');
+});
+['rateBasic','rateStd','ratePrem'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    const map = { rateBasic: 'disp-basic', rateStd: 'disp-std', ratePrem: 'disp-prem' };
+    document.getElementById(map[id]).textContent = fmtFull(+e.target.value);
+  });
+});
+
+document.querySelectorAll('.seg button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.seg button').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+    btn.classList.add('active'); btn.setAttribute('aria-pressed','true');
+    state.tier = +btn.dataset.tier;
+    calc();
+  });
+});
+
+document.querySelectorAll('#addons input').forEach(inp => {
+  inp.addEventListener('change', () => {
+    inp.closest('.chip').classList.toggle('on', inp.checked);
+    calc();
+  });
+});
+
+document.querySelectorAll('.preset').forEach(btn => {
+  btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+});
+
+function applyPreset(key) {
+  const p = PRESETS[key];
+  if (!p) return;
+  state.preset = key;
+  state.quality = p.quality;
+  state.tier = p.tier;
+  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('active', b.dataset.preset === key));
+  const a = document.getElementById('area');
+  a.value = p.area;
+  document.getElementById('areaVal').textContent = p.area.toLocaleString('en-IN') + ' sq ft';
+  const f = document.getElementById('floors');
+  f.value = p.floors;
+  document.getElementById('floorsVal').textContent = p.floors;
+  document.querySelectorAll('.seg button').forEach(b => {
+    const on = +b.dataset.tier === p.tier;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  document.querySelectorAll('#addons input').forEach(inp => {
+    const on = !!p.addons[inp.dataset.id];
+    inp.checked = on;
+    inp.closest('.chip').classList.toggle('on', on);
+  });
+  calc();
+}
+
+function rateForQuality() {
+  if (state.quality === 'basic') return +document.getElementById('rateBasic').value;
+  if (state.quality === 'premium') return +document.getElementById('ratePrem').value;
+  return +document.getElementById('rateStd').value;
+}
+
+function compute() {
+  const area = +document.getElementById('area').value;
+  const floors = +document.getElementById('floors').value;
+  const tier = state.tier;
+  const rate = rateForQuality() * tier;
+  const floorBump = 1 + Math.max(0, floors - 1) * 0.04;
+  const construction = area * rate * floorBump;
+  let addons = 0;
+  const addonList = [];
+  document.querySelectorAll('#addons input:checked').forEach(i => {
+    const c = +i.dataset.cost;
+    addons += c;
+    addonList.push({ id: i.dataset.id, label: i.parentElement.childNodes[0].textContent.trim() || i.dataset.id, amount: c });
+  });
+  // fix labels from chip text
+  document.querySelectorAll('#addons input:checked').forEach((i, idx) => {
+    const text = i.closest('.chip').childNodes[0].textContent.trim();
+    // better: get text without amt
+    const label = [...i.closest('.chip').childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ').trim();
+    addonList[idx].label = label || i.dataset.id;
+  });
+  const total = construction + addons;
+  const phases = PHASES.map(ph => ({ ...ph, amount: construction * ph.pct }));
+  return { area, floors, tier, rate, floorBump, construction, addons, addonList, total, perSqft: area ? total / area : 0, phases };
+}
+
+function animateTotal(to) {
+  const from = state.animTotal;
+  const start = performance.now();
+  cancelAnimationFrame(animRaf);
+  function frame(t) {
+    const k = Math.min(1, (t - start) / 420);
+    const e = 1 - Math.pow(1 - k, 3);
+    state.animTotal = from + (to - from) * e;
+    const text = fmtLakh(state.animTotal);
+    document.getElementById('heroTotal').textContent = text;
+    document.getElementById('resultTotal').textContent = text;
+    document.getElementById('stickyTotal').textContent = text;
+    if (k < 1) animRaf = requestAnimationFrame(frame);
+    else state.animTotal = to;
+  }
+  animRaf = requestAnimationFrame(frame);
+}
+
+function calc() {
+  const r = compute();
+  animateTotal(r.total);
+  document.getElementById('heroPer').textContent = fmtFull(r.perSqft);
+  document.getElementById('heroArea').textContent = r.area.toLocaleString('en-IN');
+  document.getElementById('heroFloors').textContent = String(r.floors);
+  document.getElementById('resultPer').textContent = fmtFull(r.perSqft);
+  document.getElementById('resultPreset').textContent = PRESETS[state.preset]?.name || 'Custom';
+  document.getElementById('disp-basic').textContent = fmtFull(+document.getElementById('rateBasic').value);
+  document.getElementById('disp-std').textContent = fmtFull(+document.getElementById('rateStd').value);
+  document.getElementById('disp-prem').textContent = fmtFull(+document.getElementById('ratePrem').value);
+
+  const maxPhase = Math.max(...r.phases.map(p => p.amount), r.addons, 1);
+  const box = document.getElementById('phases');
+  box.innerHTML = '';
+  r.phases.forEach(ph => {
+    const row = document.createElement('div');
+    row.className = 'phase';
+    row.setAttribute('role', 'listitem');
+    row.innerHTML = `
+      <span class="nm">${ph.label}</span>
+      <div class="track"><div class="fill" style="width:${(ph.amount/maxPhase)*100}%;background:${ph.color}"></div></div>
+      <span class="amt">₹${fmtLakhNum(ph.amount)} L</span>`;
+    box.appendChild(row);
+  });
+  if (r.addons > 0) {
+    const row = document.createElement('div');
+    row.className = 'phase';
+    row.setAttribute('role', 'listitem');
+    row.innerHTML = `
+      <span class="nm">Add-ons</span>
+      <div class="track"><div class="fill" style="width:${(r.addons/maxPhase)*100}%;background:#C4A35A"></div></div>
+      <span class="amt">₹${fmtLakhNum(r.addons)} L</span>`;
+    box.appendChild(row);
+  }
+
+  const tips = [];
+  const structure = r.phases.find(p => p.id === 'structure');
+  tips.push(`<strong>Structure is ${fmtLakh(structure.amount)}</strong> (${(structure.pct*100).toFixed(0)}% of construction). Value-engineering steel/concrete specs with your engineer can often trim 8–12% — about <strong>${fmtLakh(structure.amount * 0.1)}</strong>.`);
+  if (state.tier > 1) {
+    const save = r.construction - r.construction / state.tier;
+    tips.push(`Tier‑1 rate premium is roughly <strong>${fmtLakh(save)}</strong> on this area. Sourcing labour from a nearby Tier‑2 market (same design) shrinks that gap.`);
+  } else if (r.floors > 1) {
+    const bump = r.construction - (r.area * rateForQuality() * state.tier);
+    tips.push(`Extra floors add an example complexity bump of <strong>${fmtLakh(bump)}</strong>. A single-floor layout at the same built-up area avoids that.`);
+  } else {
+    tips.push(`Finishing is <strong>${fmtLakh(r.phases.find(p=>p.id==='finishing').amount)}</strong>. Mid-range tiles instead of imported stone often saves <strong>${fmtLakh(r.phases.find(p=>p.id==='finishing').amount * 0.18)}</strong>.`);
+  }
+  if (r.addons > 0) {
+    const biggest = [...document.querySelectorAll('#addons input:checked')].map(i => ({
+      id: i.dataset.id, cost: +i.dataset.cost,
+      label: [...i.closest('.chip').childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join(' ').trim()
+    })).sort((a,b) => b.cost - a.cost)[0];
+    tips.push(`Your largest add-on is <strong>${biggest.label}</strong> at <strong>${fmtLakh(biggest.cost)}</strong>. Phasing it to year two keeps the shell moving without that cash out now.`);
+  } else {
+    tips.push(`No add-ons selected. Booking a modular kitchen later (example ₹2.5 L) keeps the first drawdown focused on structure.`);
+  }
+  document.getElementById('tips').innerHTML = tips.slice(0,3).map((t,i) =>
+    `<div class="tip-item"><span class="tip-n" aria-hidden="true">${i+1}</span><div>${t}</div></div>`
+  ).join('');
+
+  document.getElementById('ctaText').innerHTML =
+    `Your <span class="hl">${fmtLakh(r.total)}</span> house build will span 40+ payments — cement, labour, interiors. Track every one in Ledger, free.`;
+
+  updateHash();
+}
+
+function serialize() {
+  const addons = {};
+  document.querySelectorAll('#addons input').forEach(i => { addons[i.dataset.id] = i.checked; });
+  return {
+    p: state.preset, q: state.quality, t: state.tier,
+    a: +document.getElementById('area').value,
+    f: +document.getElementById('floors').value,
+    rb: +document.getElementById('rateBasic').value,
+    rs: +document.getElementById('rateStd').value,
+    rp: +document.getElementById('ratePrem').value,
+    addons
+  };
+}
+function updateHash() {
+  const h = '#e=' + btoa(unescape(encodeURIComponent(JSON.stringify(serialize()))));
+  if (location.hash !== h) history.replaceState(null, '', h);
+}
+function loadHash() {
+  try {
+    if (!location.hash.startsWith('#e=')) return false;
+    const o = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))));
+    if (o.p && PRESETS[o.p]) state.preset = o.p;
+    if (o.q) state.quality = o.q;
+    document.querySelectorAll('.preset').forEach(b => b.classList.toggle('active', b.dataset.preset === state.preset));
+    if (o.a) {
+      document.getElementById('area').value = o.a;
+      document.getElementById('areaVal').textContent = (+o.a).toLocaleString('en-IN') + ' sq ft';
+    }
+    if (o.f) {
+      document.getElementById('floors').value = o.f;
+      document.getElementById('floorsVal').textContent = o.f;
+    }
+    if (o.t) {
+      state.tier = +o.t;
+      document.querySelectorAll('.seg button').forEach(b => {
+        const on = +b.dataset.tier === state.tier;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    if (o.rb) document.getElementById('rateBasic').value = o.rb;
+    if (o.rs) document.getElementById('rateStd').value = o.rs;
+    if (o.rp) document.getElementById('ratePrem').value = o.rp;
+    if (o.addons) {
+      document.querySelectorAll('#addons input').forEach(inp => {
+        const on = !!o.addons[inp.dataset.id];
+        inp.checked = on;
+        inp.closest('.chip').classList.toggle('on', on);
+      });
+    }
+    return true;
+  } catch (e) { return false; }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function drawShareImage(r) {
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.fillStyle = '#F4EEE2'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#EDE5D5';
+  roundRect(ctx, 60, 80, W - 120, H - 200, 36); ctx.fill();
+  ctx.fillStyle = '#2B2722';
+  ctx.font = '600 28px Hanken Grotesk, sans-serif';
+  ctx.fillText('LEDGER', 100, 150);
+  ctx.font = '500 48px Fraunces, Georgia, serif';
+  ctx.fillText('House build estimate', 100, 220);
+  ctx.fillStyle = '#8A8070';
+  ctx.font = '400 26px Hanken Grotesk, sans-serif';
+  ctx.fillText((PRESETS[state.preset]?.name || 'Custom') + ' · ' + r.area.toLocaleString('en-IN') + ' sq ft · ' + r.floors + ' fl', 100, 270);
+  ctx.fillStyle = '#2B2722';
+  ctx.font = '600 96px Fraunces, Georgia, serif';
+  ctx.fillText(fmtLakh(r.total), 100, 400);
+  ctx.fillStyle = '#5A5346';
+  ctx.font = '500 28px Hanken Grotesk, sans-serif';
+  ctx.fillText('Per sq ft ' + fmtFull(r.perSqft), 100, 460);
+
+  let y = 540;
+  const rows = [...r.phases.map(p => ({ label: p.label, amount: p.amount, color: p.color }))];
+  if (r.addons) rows.push({ label: 'Add-ons', amount: r.addons, color: '#C4A35A' });
+  const max = Math.max(...rows.map(x => x.amount), 1);
+  rows.forEach(p => {
+    ctx.fillStyle = '#2B2722';
+    ctx.font = '600 24px Hanken Grotesk, sans-serif';
+    ctx.fillText(p.label, 100, y);
+    ctx.fillStyle = '#5A5346';
+    ctx.textAlign = 'right';
+    ctx.fillText('₹' + fmtLakhNum(p.amount) + ' L', W - 100, y);
+    ctx.textAlign = 'left';
+    y += 16;
+    ctx.fillStyle = '#D9CCB4';
+    roundRect(ctx, 100, y, W - 200, 14, 7); ctx.fill();
+    ctx.fillStyle = p.color;
+    roundRect(ctx, 100, y, (W - 200) * (p.amount / max), 14, 7); ctx.fill();
+    y += 48;
+  });
+  ctx.fillStyle = '#B8714F';
+  ctx.font = '600 26px Hanken Grotesk, sans-serif';
+  ctx.fillText('Track every rupee in Ledger', 100, H - 120);
+  ctx.fillStyle = '#8A8070';
+  ctx.font = '400 22px Hanken Grotesk, sans-serif';
+  ctx.fillText('Example estimate · not a quote', 100, H - 80);
+  return canvas;
+}
+
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const r = compute();
+  const canvas = drawShareImage(r);
+  const status = document.getElementById('shareStatus');
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ledger-house-estimate.png';
+    a.click();
+    status.textContent = 'Estimate PNG downloaded. Link with your numbers is in the address bar.';
+  } catch (e) {
+    status.textContent = 'Could not export image. Copy the link instead.';
+  }
+  try { await navigator.clipboard.writeText(location.href); } catch (_) {}
+});
+
+document.getElementById('copyLinkBtn').addEventListener('click', async () => {
+  calc();
+  try {
+    await navigator.clipboard.writeText(location.href);
+    document.getElementById('shareStatus').textContent = 'Link copied — it reopens with these numbers.';
+  } catch (_) {
+    document.getElementById('shareStatus').textContent = 'Copy the address bar link to share this estimate.';
+  }
+});
+
+if (!loadHash()) applyPreset('standard');
+else calc();
+</script>
+</body>
+</html>

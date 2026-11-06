@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-itunes-app" content="app-id=6796905803">
+<title>Indian Wedding Budget Calculator — Ledger</title>
+<meta name="description" content="Estimate your Indian wedding in seconds. Presets for Intimate, Classic or Grand — then fine-tune guests, functions and categories. Track every rupee in Ledger.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F4EEE2; --paper2: #EDE5D5; --paper3: #E6DCC8;
+  --ink: #2B2722; --ink2: #5A5346; --ink3: #8A8070;
+  --hairline: #D9CCB4; --river: #5C7A99; --clay: #B8714F;
+  --shadow: 0 8px 28px rgba(43,39,34,0.08); --shadow-sm: 0 2px 10px rgba(43,39,34,0.06);
+  --radius: 18px; --safe-b: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #17150F; --paper2: #201D16; --paper3: #2A261E;
+    --ink: #EFE6D4; --ink2: #C9BDA6; --ink3: #8F8574;
+    --hairline: #2E2A22; --river: #8FAACB; --clay: #D4906C;
+    --shadow: 0 8px 28px rgba(0,0,0,0.35); --shadow-sm: 0 2px 10px rgba(0,0,0,0.25);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--paper); color: var(--ink); line-height: 1.55; font-size: 16px;
+  -webkit-font-smoothing: antialiased; padding-bottom: 88px;
+}
+h1,h2,h3,.brand,.num,.preset-title { font-family: 'Fraunces', Georgia, serif; font-weight: 550; }
+a { color: var(--river); text-underline-offset: 3px; }
+.nav {
+  max-width: 760px; margin: 0 auto; padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 0.5px solid var(--hairline);
+}
+.brand { font-size: 20px; font-weight: 600; }
+.brand a { color: var(--ink); text-decoration: none; }
+.nav-links a { margin-left: 14px; font-size: 13px; color: var(--ink3); text-decoration: none; font-weight: 500; }
+.nav-links a:hover { color: var(--ink); }
+.wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 40px; }
+.eyebrow { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); font-weight: 600; margin: 0 0 8px; }
+h1 { font-size: clamp(28px, 6vw, 40px); line-height: 1.12; margin: 0 0 10px; font-weight: 550; }
+.lede { color: var(--ink2); margin: 0 0 8px; font-size: 16px; max-width: 38em; }
+.disclaimer-line {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--ink3); margin: 0 0 22px;
+}
+.tip {
+  position: relative; display: inline-flex; width: 18px; height: 18px;
+  border-radius: 50%; border: 1px solid var(--hairline); background: var(--paper2);
+  color: var(--ink2); font-size: 11px; font-weight: 700; align-items: center; justify-content: center;
+  cursor: help; vertical-align: middle;
+}
+.tip:focus { outline: 2px solid var(--river); outline-offset: 2px; }
+.tip[data-tip]::after {
+  content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 8px);
+  transform: translateX(-50%); width: min(260px, 70vw); padding: 10px 12px;
+  background: var(--ink); color: var(--paper); border-radius: 10px; font-size: 12px;
+  font-weight: 400; line-height: 1.4; opacity: 0; pointer-events: none;
+  transition: opacity .15s; z-index: 20; text-align: left; letter-spacing: 0;
+  text-transform: none;
+}
+.tip:hover::after, .tip:focus::after { opacity: 1; }
+
+.hero-total {
+  background: var(--paper2); border: 0.5px solid var(--hairline);
+  border-radius: 22px; padding: 22px 22px 20px; box-shadow: var(--shadow);
+  margin-bottom: 18px; position: relative; overflow: hidden;
+}
+.hero-total::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--clay), var(--river));
+}
+.hero-total .label { font-size: 12px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink3); font-weight: 600; }
+.hero-total .big {
+  font-family: 'Fraunces', Georgia, serif; font-size: clamp(40px, 10vw, 56px);
+  font-weight: 600; line-height: 1.05; margin: 6px 0 10px; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--ink2); font-size: 14px; }
+.hero-meta strong { color: var(--ink); font-weight: 600; }
+
+.presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 22px; }
+@media (max-width: 420px) {
+  .presets { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .preset { padding: 12px 8px; }
+  .preset-title { font-size: 15px; }
+  .preset-sub { font-size: 11px; }
+}
+.preset {
+  appearance: none; border: 1.5px solid var(--hairline); background: var(--paper);
+  border-radius: 16px; padding: 14px 12px; text-align: left; cursor: pointer;
+  color: var(--ink); box-shadow: var(--shadow-sm); transition: border-color .15s, background .15s, transform .12s;
+  font: inherit;
+}
+.preset:hover { border-color: var(--clay); }
+.preset:focus-visible { outline: 2px solid var(--river); outline-offset: 2px; }
+.preset.active { border-color: var(--clay); background: color-mix(in srgb, var(--clay) 12%, var(--paper)); box-shadow: var(--shadow); }
+.preset-title { display: block; font-size: 17px; margin-bottom: 2px; }
+.preset-sub { display: block; font-size: 12px; color: var(--ink3); line-height: 1.35; }
+
+.card {
+  background: var(--paper2); border: 0.5px solid var(--hairline);
+  border-radius: var(--radius); padding: 18px; margin: 0 0 14px; box-shadow: var(--shadow-sm);
+}
+.card h2 { font-size: 18px; margin: 0 0 14px; font-weight: 550; }
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 10px; }
+.field-head label { font-size: 13px; font-weight: 600; color: var(--ink2); }
+.field-val { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+input[type="range"] {
+  width: 100%; height: 6px; appearance: none; background: var(--hairline);
+  border-radius: 999px; outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--clay); border: 2px solid var(--paper); box-shadow: var(--shadow-sm); cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--clay);
+  border: 2px solid var(--paper); cursor: pointer;
+}
+.stepper {
+  display: inline-flex; align-items: center; gap: 0;
+  border: 0.5px solid var(--hairline); border-radius: 12px; overflow: hidden; background: var(--paper);
+}
+.stepper button {
+  width: 40px; height: 40px; border: none; background: transparent; color: var(--ink);
+  font-size: 20px; cursor: pointer; font: inherit;
+}
+.stepper button:hover { background: var(--paper3); }
+.stepper button:focus-visible { outline: 2px solid var(--river); outline-offset: -2px; }
+.stepper .sv {
+  min-width: 64px; text-align: center; font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums;
+}
+.seg {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  background: var(--paper); padding: 4px; border-radius: 12px; border: 0.5px solid var(--hairline);
+}
+.seg button {
+  border: none; background: transparent; padding: 10px 6px; border-radius: 9px;
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); cursor: pointer;
+}
+.seg button.active { background: var(--ink); color: var(--paper); }
+.seg button:focus-visible { outline: 2px solid var(--river); outline-offset: 1px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px;
+  border-radius: 999px; border: 1.5px solid var(--hairline); background: var(--paper);
+  font-size: 14px; font-weight: 500; cursor: pointer; user-select: none; color: var(--ink);
+}
+.chip input { position: absolute; opacity: 0; width: 0; height: 0; }
+.chip:has(input:checked), .chip.on {
+  border-color: var(--clay); background: color-mix(in srgb, var(--clay) 14%, var(--paper));
+}
+.chip:focus-within { outline: 2px solid var(--river); outline-offset: 2px; }
+
+details.fine {
+  border-radius: var(--radius); border: 0.5px solid var(--hairline);
+  background: var(--paper2); margin: 0 0 14px; box-shadow: var(--shadow-sm);
+}
+details.fine > summary {
+  list-style: none; cursor: pointer; padding: 16px 18px; font-weight: 600; font-size: 15px;
+  display: flex; justify-content: space-between; align-items: center; color: var(--ink);
+}
+details.fine > summary::-webkit-details-marker { display: none; }
+details.fine > summary::after { content: '+'; color: var(--ink3); font-size: 20px; font-weight: 400; }
+details.fine[open] > summary::after { content: '−'; }
+.fine-body { padding: 0 18px 16px; border-top: 0.5px solid var(--hairline); }
+.cat-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center;
+  padding: 12px 0; border-bottom: 0.5px solid var(--hairline);
+}
+.cat-row:last-child { border-bottom: none; }
+.cat-row .name { font-weight: 600; font-size: 14px; }
+.cat-row .hint { font-size: 12px; color: var(--ink3); }
+.cat-row input[type="range"] { grid-column: 1 / -1; }
+.cat-amt { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; }
+
+.result {
+  background: var(--paper); border: 0.5px solid var(--hairline);
+  border-radius: 22px; padding: 22px 20px 20px; margin: 8px 0 14px; box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.result::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--clay);
+}
+.result h2 { margin: 0 0 4px; font-size: 15px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink3); font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; }
+.result .rtotal {
+  font-family: 'Fraunces', Georgia, serif; font-size: 36px; font-weight: 600;
+  margin: 0 0 6px; font-variant-numeric: tabular-nums;
+}
+.result-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--ink2); margin-bottom: 16px; }
+.bars { display: flex; flex-direction: column; gap: 10px; }
+.bar {
+  display: grid; grid-template-columns: 92px 1fr 64px; gap: 10px; align-items: center; font-size: 13px;
+}
+.bar .track { height: 10px; background: var(--paper3); border-radius: 999px; overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 999px; transition: width .4s ease; }
+.bar .amt { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink2); font-weight: 500; }
+.bar .nm { font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.tips h2 { font-size: 18px; margin: 0 0 12px; }
+.tip-item {
+  display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 12px 0;
+  border-bottom: 0.5px solid var(--hairline); font-size: 14px; color: var(--ink2);
+}
+.tip-item:last-child { border-bottom: none; }
+.tip-n {
+  width: 28px; height: 28px; border-radius: 50%; background: color-mix(in srgb, var(--clay) 18%, var(--paper));
+  color: var(--clay); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.tip-item strong { color: var(--ink); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 18px; }
+.btn {
+  appearance: none; border: 1.5px solid var(--hairline); background: var(--paper);
+  color: var(--ink); border-radius: 12px; padding: 12px 16px; font: inherit;
+  font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: var(--shadow-sm);
+}
+.btn:hover { border-color: var(--ink3); }
+.btn:focus-visible { outline: 2px solid var(--river); outline-offset: 2px; }
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn.ghost { background: transparent; }
+.share-status { font-size: 13px; color: var(--clay); min-height: 1.2em; margin: 0 0 8px; }
+
+.cta {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--clay) 16%, var(--paper2)), var(--paper2));
+  border: 0.5px solid var(--hairline); border-radius: 22px; padding: 24px 22px;
+  text-align: center; box-shadow: var(--shadow); margin: 8px 0 28px;
+}
+.cta p { margin: 0 0 14px; font-size: 17px; color: var(--ink); line-height: 1.45; }
+.cta p .hl { font-family: 'Fraunces', Georgia, serif; font-weight: 600; }
+.cta .badge {
+  display: inline-block; padding: 14px 22px; border-radius: 14px;
+  background: var(--ink); color: var(--paper); font-weight: 600; text-decoration: none; font-size: 15px;
+}
+.cta .sub { margin-top: 12px; font-size: 13px; color: var(--ink3); }
+
+.sticky-bar {
+  position: fixed; left: 12px; right: 12px; bottom: calc(10px + var(--safe-b)); z-index: 40;
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  color: var(--paper); border-radius: 16px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: none; box-shadow: 0 10px 30px rgba(43,39,34,0.28);
+  padding: 12px 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.sticky-bar .s-label { color: color-mix(in srgb, var(--paper) 65%, transparent) !important; }
+.sticky-bar .s-total { color: var(--paper) !important; }
+.sticky-bar a {
+  background: var(--paper) !important; color: var(--ink) !important;
+}
+.sticky-bar .s-label { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: color-mix(in srgb, var(--paper) 65%, transparent); font-weight: 600; }
+.sticky-bar .s-total {
+  font-family: 'Fraunces', Georgia, serif; font-size: 22px; font-weight: 600;
+  font-variant-numeric: tabular-nums; line-height: 1.1; color: var(--paper);
+}
+.sticky-bar a {
+  flex-shrink: 0; background: var(--paper); color: var(--ink); text-decoration: none;
+  padding: 10px 14px; border-radius: 11px; font-size: 13px; font-weight: 600;
+}
+@media (min-width: 761px) { .sticky-bar { display: none; } body { padding-bottom: 0; } }
+
+footer {
+  max-width: 760px; margin: 0 auto; padding: 20px; border-top: 0.5px solid var(--hairline);
+  color: var(--ink3); font-size: 12px; text-align: center;
+}
+footer a { color: var(--ink3); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); border: 0;
+}
+#shareCanvas { position: absolute; left: -9999px; top: 0; }
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Primary">
+  <span class="brand"><a href="index.html">Ledger</a></span>
+  <span class="nav-links">
+    <a href="house-construction-cost-calculator.html">House calc</a>
+    <a href="https://apps.apple.com/app/apple-store/id6796905803?pt=128885861&amp;ct=calc-wedding&amp;mt=8">App Store</a>
+  </span>
+</nav>
+
+<main class="wrap">
+  <p class="eyebrow">Free calculator · India</p>
+  <h1>Your wedding budget, in five seconds</h1>
+  <p class="lede">Pick a preset, tweak guests and functions, see where the money goes — then save the estimate.</p>
+  <p class="disclaimer-line">
+    Example rates you can edit
+    <button type="button" class="tip" data-tip="Defaults are illustrative mid-range placeholders so the maths works immediately. Replace with your vendor quotes. Not a market survey or a quote." aria-label="About these example rates">i</button>
+  </p>
+
+  <div class="presets" role="group" aria-label="Wedding size presets">
+    <button type="button" class="preset" data-preset="intimate" id="p-intimate">
+      <span class="preset-title">Intimate</span>
+      <span class="preset-sub">~80 guests · 3 functions · leaner venue</span>
+    </button>
+    <button type="button" class="preset active" data-preset="classic" id="p-classic">
+      <span class="preset-title">Classic</span>
+      <span class="preset-sub">~200 guests · 5 functions · mid-range</span>
+    </button>
+    <button type="button" class="preset" data-preset="grand" id="p-grand">
+      <span class="preset-title">Grand</span>
+      <span class="preset-sub">~400 guests · 5 functions · metro feel</span>
+    </button>
+  </div>
+
+  <section class="hero-total" aria-live="polite">
+    <div class="label">Estimated total</div>
+    <div class="big" id="heroTotal">₹0</div>
+    <div class="hero-meta">
+      <span>Per guest <strong id="heroPer">₹0</strong></span>
+      <span>Functions <strong id="heroFns">0</strong></span>
+      <span>Guests <strong id="heroGuests">0</strong></span>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="basics-h">
+    <h2 id="basics-h">Basics</h2>
+    <div class="field">
+      <div class="field-head">
+        <label for="guests">Guest count</label>
+        <span class="field-val" id="guestsVal" aria-hidden="true">200</span>
+      </div>
+      <input type="range" id="guests" min="40" max="800" step="10" value="200" aria-valuetext="200 guests">
+    </div>
+    <div class="field">
+      <div class="field-head"><span id="tier-label">City tier</span></div>
+      <div class="seg" role="group" aria-labelledby="tier-label">
+        <button type="button" data-tier="1.35" aria-pressed="false">Tier 1</button>
+        <button type="button" data-tier="1" class="active" aria-pressed="true">Tier 2</button>
+        <button type="button" data-tier="0.75" aria-pressed="false">Tier 3</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="fn-h">
+    <h2 id="fn-h">Functions</h2>
+    <div class="chips" id="functions" role="group" aria-labelledby="fn-h">
+      <label class="chip on"><input type="checkbox" value="haldi" checked> Haldi</label>
+      <label class="chip on"><input type="checkbox" value="mehendi" checked> Mehendi</label>
+      <label class="chip on"><input type="checkbox" value="sangeet" checked> Sangeet</label>
+      <label class="chip on"><input type="checkbox" value="wedding" checked> Wedding</label>
+      <label class="chip on"><input type="checkbox" value="reception" checked> Reception</label>
+    </div>
+  </section>
+
+  <details class="fine">
+    <summary>Fine-tune categories</summary>
+    <div class="fine-body" id="cats"></div>
+  </details>
+
+  <section class="result" id="resultCard" aria-labelledby="result-h">
+    <h2 id="result-h">Your estimate</h2>
+    <div class="rtotal" id="resultTotal">₹0</div>
+    <div class="result-meta">
+      <span>Per guest <strong id="resultPer">₹0</strong></span>
+      <span id="resultPreset">Classic</span>
+    </div>
+    <div class="bars" id="bars" role="list"></div>
+  </section>
+
+  <section class="card tips" aria-labelledby="save-h">
+    <h2 id="save-h">Where you could save</h2>
+    <div id="tips"></div>
+  </section>
+
+  <p class="share-status" id="shareStatus" role="status" aria-live="polite"></p>
+  <div class="actions">
+    <button type="button" class="btn primary" id="shareBtn">Save / share my estimate</button>
+    <button type="button" class="btn" id="copyLinkBtn">Copy link</button>
+  </div>
+
+  <section class="cta" aria-label="Get Ledger">
+    <p id="ctaText">Your wedding has many moving parts. Track every rupee in Ledger, free.</p>
+    <a class="badge" href="https://apps.apple.com/app/apple-store/id6796905803?pt=128885861&amp;ct=calc-wedding&amp;mt=8">Get Ledger on the App Store</a>
+    <p class="sub">Calm pools for the big day · Private on your iPhone</p>
+  </section>
+</main>
+
+<div class="sticky-bar" aria-label="Live total">
+  <div>
+    <div class="s-label">Live total</div>
+    <div class="s-total" id="stickyTotal">₹0</div>
+  </div>
+  <a href="https://apps.apple.com/app/apple-store/id6796905803?pt=128885861&amp;ct=calc-wedding&amp;mt=8">Open Ledger</a>
+</div>
+
+<footer>© 2026 Ledger · <a href="house-construction-cost-calculator.html">House cost calculator</a></footer>
+<canvas id="shareCanvas" width="1080" height="1350" aria-hidden="true"></canvas>
+
+<script>
+const COLORS = ['#B8714F','#5C7A99','#7A8F6A','#8B6B9E','#C4A35A','#6B8E9E','#B07A5A','#5A7A6B'];
+const CAT_DEF = [
+  { id:'venue', label:'Venue', mode:'fixed', min:50000, max:2000000, step:10000, color:0 },
+  { id:'catering', label:'Catering / plate', mode:'perGuestFn', min:400, max:4000, step:50, color:1 },
+  { id:'decor', label:'Decor / function', mode:'perFn', min:10000, max:200000, step:5000, color:2 },
+  { id:'outfits', label:'Outfits', mode:'fixed', min:50000, max:1500000, step:10000, color:3 },
+  { id:'jewellery', label:'Jewellery', mode:'fixed', min:0, max:2000000, step:25000, color:4 },
+  { id:'photo', label:'Photo / function', mode:'perFn', min:10000, max:150000, step:5000, color:5 },
+  { id:'gifts', label:'Gifts / guest', mode:'perGuest', min:0, max:1500, step:50, color:6 },
+  { id:'travel', label:'Travel', mode:'fixed', min:0, max:500000, step:10000, color:7 },
+];
+const TIER_AFFECTED = new Set(['venue','catering','decor','photo','travel']);
+const PRESETS = {
+  intimate: {
+    guests: 80, tier: 1, fns: ['mehendi','wedding','reception'], name: 'Intimate',
+    cats: { venue:150000, catering:900, decor:30000, outfits:120000, jewellery:150000, photo:25000, gifts:200, travel:20000 }
+  },
+  classic: {
+    guests: 200, tier: 1, fns: ['haldi','mehendi','sangeet','wedding','reception'], name: 'Classic',
+    cats: { venue:250000, catering:1200, decor:45000, outfits:200000, jewellery:300000, photo:35000, gifts:300, travel:50000 }
+  },
+  grand: {
+    guests: 400, tier: 1.35, fns: ['haldi','mehendi','sangeet','wedding','reception'], name: 'Grand',
+    cats: { venue:600000, catering:1800, decor:80000, outfits:450000, jewellery:600000, photo:60000, gifts:450, travel:150000 }
+  }
+};
+
+let state = { preset: 'classic', tier: 1, animTotal: 0, targetTotal: 0 };
+let animRaf = null;
+
+function fmtLakh(n) {
+  n = Math.round(n);
+  if (n >= 1e7) {
+    const cr = n / 1e7;
+    return '₹' + cr.toFixed(cr >= 10 ? 1 : 2) + ' Cr';
+  }
+  if (n >= 1e5) {
+    const L = n / 1e5;
+    return '₹' + (L >= 10 ? L.toFixed(1) : L.toFixed(2)) + ' L';
+  }
+  return '₹' + n.toLocaleString('en-IN');
+}
+function fmtFull(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function fmtLakhNum(n) { return (Math.round(n) / 1e5).toFixed(Math.round(n) >= 1e6 ? 1 : 2); }
+
+const catsEl = document.getElementById('cats');
+CAT_DEF.forEach(c => {
+  const row = document.createElement('div');
+  row.className = 'cat-row';
+  row.innerHTML = `
+    <div>
+      <div class="name" id="lbl-${c.id}">${c.label}</div>
+      <div class="hint">${c.mode === 'fixed' ? 'fixed' : c.mode === 'perGuest' ? '× guests' : c.mode === 'perFn' ? '× functions' : '× guests × functions'}</div>
+    </div>
+    <div class="cat-amt" id="disp-${c.id}">₹0</div>
+    <input type="range" id="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${PRESETS.classic.cats[c.id]}" aria-labelledby="lbl-${c.id}">
+  `;
+  catsEl.appendChild(row);
+  row.querySelector('input').addEventListener('input', () => { markCustom(); calc(); });
+});
+
+function selectedFns() {
+  return [...document.querySelectorAll('#functions input:checked')].map(i => i.value);
+}
+
+document.querySelectorAll('#functions input').forEach(inp => {
+  inp.addEventListener('change', () => {
+    inp.closest('.chip').classList.toggle('on', inp.checked);
+    markCustom(); calc();
+  });
+});
+
+document.getElementById('guests').addEventListener('input', e => {
+  document.getElementById('guestsVal').textContent = e.target.value;
+  e.target.setAttribute('aria-valuetext', e.target.value + ' guests');
+  markCustom(); calc();
+});
+
+document.querySelectorAll('.seg button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.seg button').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+    btn.classList.add('active'); btn.setAttribute('aria-pressed','true');
+    state.tier = +btn.dataset.tier;
+    markCustom(); calc();
+  });
+});
+
+document.querySelectorAll('.preset').forEach(btn => {
+  btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+});
+
+function markCustom() {
+  /* keep preset name until user picks another preset; soft-deselect visual if drifted */
+}
+
+function applyPreset(key) {
+  const p = PRESETS[key];
+  if (!p) return;
+  state.preset = key;
+  document.querySelectorAll('.preset').forEach(b => b.classList.toggle('active', b.dataset.preset === key));
+  const g = document.getElementById('guests');
+  g.value = p.guests;
+  document.getElementById('guestsVal').textContent = p.guests;
+  g.setAttribute('aria-valuetext', p.guests + ' guests');
+  state.tier = p.tier;
+  document.querySelectorAll('.seg button').forEach(b => {
+    const on = +b.dataset.tier === p.tier;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  document.querySelectorAll('#functions input').forEach(inp => {
+    const on = p.fns.includes(inp.value);
+    inp.checked = on;
+    inp.closest('.chip').classList.toggle('on', on);
+  });
+  CAT_DEF.forEach(c => {
+    document.getElementById(c.id).value = p.cats[c.id];
+  });
+  calc();
+}
+
+function compute() {
+  const guests = +document.getElementById('guests').value;
+  const tier = state.tier;
+  const fns = selectedFns();
+  const fnCount = Math.max(fns.length, 1);
+  const parts = CAT_DEF.map(c => {
+    let raw = +document.getElementById(c.id).value || 0;
+    let amount = 0;
+    if (c.mode === 'fixed') amount = raw;
+    else if (c.mode === 'perGuest') amount = raw * guests;
+    else if (c.mode === 'perFn') amount = raw * fnCount;
+    else amount = raw * guests * fnCount;
+    if (TIER_AFFECTED.has(c.id)) amount *= tier;
+    return { ...c, raw, amount, colorHex: COLORS[c.color] };
+  });
+  const total = parts.reduce((s, p) => s + p.amount, 0);
+  return { guests, tier, fns, fnCount, parts, total, perGuest: guests ? total / guests : 0 };
+}
+
+function animateTotal(to) {
+  state.targetTotal = to;
+  const from = state.animTotal;
+  const start = performance.now();
+  const dur = 420;
+  cancelAnimationFrame(animRaf);
+  function frame(t) {
+    const k = Math.min(1, (t - start) / dur);
+    const e = 1 - Math.pow(1 - k, 3);
+    state.animTotal = from + (to - from) * e;
+    const text = fmtLakh(state.animTotal);
+    document.getElementById('heroTotal').textContent = text;
+    document.getElementById('resultTotal').textContent = text;
+    document.getElementById('stickyTotal').textContent = text;
+    if (k < 1) animRaf = requestAnimationFrame(frame);
+    else state.animTotal = to;
+  }
+  animRaf = requestAnimationFrame(frame);
+}
+
+function calc() {
+  const r = compute();
+  animateTotal(r.total);
+  document.getElementById('heroPer').textContent = fmtFull(r.perGuest);
+  document.getElementById('heroFns').textContent = String(r.fns.length);
+  document.getElementById('heroGuests').textContent = String(r.guests);
+  document.getElementById('resultPer').textContent = fmtFull(r.perGuest);
+  document.getElementById('resultPreset').textContent = PRESETS[state.preset]?.name || 'Custom';
+
+  CAT_DEF.forEach(c => {
+    const raw = +document.getElementById(c.id).value;
+    document.getElementById('disp-' + c.id).textContent =
+      c.mode === 'fixed' || c.mode === 'perFn' && raw >= 1000 ? fmtLakh(raw) :
+      c.mode.includes('Guest') || c.id === 'catering' || c.id === 'gifts' ? '₹' + raw.toLocaleString('en-IN') : fmtLakh(raw);
+    if (c.mode === 'fixed' || c.mode === 'perFn' || c.mode === 'travel') {
+      document.getElementById('disp-' + c.id).textContent = raw >= 100000 ? fmtLakh(raw) : fmtFull(raw);
+    }
+  });
+
+  const max = Math.max(...r.parts.map(p => p.amount), 1);
+  const bars = document.getElementById('bars');
+  bars.innerHTML = '';
+  [...r.parts].sort((a,b) => b.amount - a.amount).forEach(p => {
+    const pct = r.total ? (p.amount / r.total * 100) : 0;
+    const row = document.createElement('div');
+    row.className = 'bar';
+    row.setAttribute('role', 'listitem');
+    row.innerHTML = `
+      <span class="nm">${p.label.split(' /')[0]}</span>
+      <div class="track"><div class="fill" style="width:${(p.amount/max)*100}%;background:${p.colorHex}"></div></div>
+      <span class="amt">₹${fmtLakhNum(p.amount)} L</span>`;
+    bars.appendChild(row);
+  });
+
+  // tips
+  const sorted = [...r.parts].sort((a,b) => b.amount - a.amount);
+  const tips = [];
+  const top = sorted[0];
+  if (top && r.total) {
+    const pct = (top.amount / r.total * 100).toFixed(0);
+    if (top.id === 'catering' && r.fnCount > 1) {
+      const save = top.amount / r.fnCount;
+      tips.push(`<strong>Catering is ${pct}%</strong> of your total. Dropping 1 function saves about <strong>${fmtLakh(save)}</strong>.`);
+    } else {
+      tips.push(`<strong>${top.label.split(' /')[0]} is ${pct}%</strong> — your biggest line. A 15% cut there frees <strong>${fmtLakh(top.amount * 0.15)}</strong>.`);
+    }
+  }
+  const venue = r.parts.find(p => p.id === 'venue');
+  if (venue && state.tier > 1) {
+    const save = venue.amount - venue.amount / state.tier;
+    tips.push(`Tier‑1 venue premium adds about <strong>${fmtLakh(save)}</strong>. A Tier‑2 venue (same size) trims that.`);
+  } else if (venue) {
+    tips.push(`Venue is <strong>${fmtLakh(venue.amount)}</strong>. Weekday or off-season dates often negotiate 10–20% — about <strong>${fmtLakh(venue.amount * 0.15)}</strong>.`);
+  }
+  const jewellery = r.parts.find(p => p.id === 'jewellery');
+  const outfits = r.parts.find(p => p.id === 'outfits');
+  if (jewellery && outfits && jewellery.amount + outfits.amount > r.total * 0.2) {
+    tips.push(`Outfits + jewellery are <strong>${fmtLakh(jewellery.amount + outfits.amount)}</strong>. Renting one outfit set can save roughly <strong>${fmtLakh(outfits.amount * 0.4)}</strong>.`);
+  } else if (r.guests > 150) {
+    const gift = r.parts.find(p => p.id === 'gifts');
+    tips.push(`At ${r.guests} guests, gifts alone are <strong>${fmtLakh(gift.amount)}</strong>. A simpler return gift at ₹150 saves <strong>${fmtLakh((gift.raw - 150) * r.guests)}</strong>.`);
+  } else {
+    tips.push(`Photo across ${r.fnCount} functions is <strong>${fmtLakh(r.parts.find(p=>p.id==='photo').amount)}</strong>. One hero-day package instead of every event can cut that nearly in half.`);
+  }
+  document.getElementById('tips').innerHTML = tips.slice(0,3).map((t,i) =>
+    `<div class="tip-item"><span class="tip-n" aria-hidden="true">${i+1}</span><div>${t}</div></div>`
+  ).join('');
+
+  const expenseLines = r.parts.filter(p => p.amount > 0).length + r.fns.length;
+  document.getElementById('ctaText').innerHTML =
+    `Your <span class="hl">${fmtLakh(r.total)}</span> wedding has ${Math.max(expenseLines, 40)}+ expenses to track. Keep every one in Ledger — free, private, on your iPhone.`;
+
+  updateHash(r);
+}
+
+function serialize() {
+  const o = {
+    p: state.preset,
+    g: +document.getElementById('guests').value,
+    t: state.tier,
+    f: selectedFns().join('.'),
+  };
+  CAT_DEF.forEach(c => { o[c.id] = +document.getElementById(c.id).value; });
+  return o;
+}
+function updateHash(r) {
+  const o = serialize();
+  const h = '#e=' + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+  if (location.hash !== h) history.replaceState(null, '', h);
+}
+function loadHash() {
+  try {
+    if (!location.hash.startsWith('#e=')) return false;
+    const o = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))));
+    if (o.p && PRESETS[o.p]) state.preset = o.p;
+    document.querySelectorAll('.preset').forEach(b => b.classList.toggle('active', b.dataset.preset === state.preset));
+    if (o.g) {
+      document.getElementById('guests').value = o.g;
+      document.getElementById('guestsVal').textContent = o.g;
+    }
+    if (o.t) {
+      state.tier = +o.t;
+      document.querySelectorAll('.seg button').forEach(b => {
+        const on = +b.dataset.tier === state.tier;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    if (o.f) {
+      const set = new Set(o.f.split('.'));
+      document.querySelectorAll('#functions input').forEach(inp => {
+        inp.checked = set.has(inp.value);
+        inp.closest('.chip').classList.toggle('on', inp.checked);
+      });
+    }
+    CAT_DEF.forEach(c => { if (o[c.id] != null) document.getElementById(c.id).value = o[c.id]; });
+    return true;
+  } catch (e) { return false; }
+}
+
+function drawShareImage(r) {
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.fillStyle = '#F4EEE2';
+  ctx.fillRect(0, 0, W, H);
+  // soft card
+  ctx.fillStyle = '#EDE5D5';
+  roundRect(ctx, 60, 80, W - 120, H - 200, 36);
+  ctx.fill();
+  ctx.fillStyle = '#2B2722';
+  ctx.font = '600 28px Hanken Grotesk, sans-serif';
+  ctx.fillText('LEDGER', 100, 150);
+  ctx.font = '500 48px Fraunces, Georgia, serif';
+  ctx.fillText('Wedding estimate', 100, 220);
+  ctx.fillStyle = '#8A8070';
+  ctx.font = '400 26px Hanken Grotesk, sans-serif';
+  ctx.fillText((PRESETS[state.preset]?.name || 'Custom') + ' · ' + r.guests + ' guests · ' + r.fns.length + ' functions', 100, 270);
+  ctx.fillStyle = '#2B2722';
+  ctx.font = '600 96px Fraunces, Georgia, serif';
+  ctx.fillText(fmtLakh(r.total), 100, 400);
+  ctx.fillStyle = '#5A5346';
+  ctx.font = '500 28px Hanken Grotesk, sans-serif';
+  ctx.fillText('Per guest ' + fmtFull(r.perGuest), 100, 460);
+
+  let y = 540;
+  const sorted = [...r.parts].sort((a,b) => b.amount - a.amount).slice(0, 6);
+  const max = sorted[0]?.amount || 1;
+  sorted.forEach(p => {
+    ctx.fillStyle = '#2B2722';
+    ctx.font = '600 24px Hanken Grotesk, sans-serif';
+    ctx.fillText(p.label.split(' /')[0], 100, y);
+    ctx.fillStyle = '#5A5346';
+    ctx.textAlign = 'right';
+    ctx.fillText('₹' + fmtLakhNum(p.amount) + ' L', W - 100, y);
+    ctx.textAlign = 'left';
+    y += 16;
+    ctx.fillStyle = '#D9CCB4';
+    roundRect(ctx, 100, y, W - 200, 14, 7); ctx.fill();
+    ctx.fillStyle = p.colorHex;
+    roundRect(ctx, 100, y, (W - 200) * (p.amount / max), 14, 7); ctx.fill();
+    y += 48;
+  });
+
+  ctx.fillStyle = '#B8714F';
+  ctx.font = '600 26px Hanken Grotesk, sans-serif';
+  ctx.fillText('Track every rupee in Ledger', 100, H - 120);
+  ctx.fillStyle = '#8A8070';
+  ctx.font = '400 22px Hanken Grotesk, sans-serif';
+  ctx.fillText('Example estimate · not a quote', 100, H - 80);
+  return canvas;
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const r = compute();
+  const canvas = drawShareImage(r);
+  const status = document.getElementById('shareStatus');
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      status.textContent = 'Estimate image copied. Link updated in the address bar — paste anywhere.';
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ledger-wedding-estimate.png';
+      a.click();
+      status.textContent = 'Estimate PNG downloaded. Link with your numbers is in the address bar.';
+    }
+  } catch (e) {
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'ledger-wedding-estimate.png';
+    a.click();
+    status.textContent = 'Estimate PNG downloaded. Share the page link to reopen with the same numbers.';
+  }
+  // also copy URL
+  try { await navigator.clipboard.writeText(location.href); } catch (_) {}
+});
+
+document.getElementById('copyLinkBtn').addEventListener('click', async () => {
+  calc();
+  try {
+    await navigator.clipboard.writeText(location.href);
+    document.getElementById('shareStatus').textContent = 'Link copied — it reopens with these numbers.';
+  } catch (_) {
+    document.getElementById('shareStatus').textContent = 'Copy the address bar link to share this estimate.';
+  }
+});
+
+if (!loadHash()) applyPreset('classic');
+else calc();
+</script>
+</body>
+</html>
