@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log bank SMS automatically on iPhone (UPI &amp; card) · Ledger</title>
+<meta name="description" content="iPhone apps can't read your SMS, but a Shortcuts automation can pass each bank message to an expense tracker. Step by step, for UPI and card payments.">
+<link rel="canonical" href="https://dmaulikr.github.io/ledger-site/bank-sms-expense-tracker-iphone.html">
+<meta name="apple-itunes-app" content="app-id=6796905803">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to log bank SMS automatically on iPhone">
+<meta property="og:description" content="Every UPI or card payment sends a bank SMS. Here's how to turn each one into an expense, on your iPhone.">
+<meta property="og:url" content="https://dmaulikr.github.io/ledger-site/bank-sms-expense-tracker-iphone.html">
+<meta property="og:image" content="https://dmaulikr.github.io/ledger-site/img/og-sms.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "How to log bank SMS automatically on iPhone",
+      "description": "iPhone apps can't read your SMS, but a Shortcuts automation can pass each bank message to an expense tracker. Step by step, for UPI and card payments.",
+      "image": "https://dmaulikr.github.io/ledger-site/img/og-sms.jpg",
+      "datePublished": "2026-11-05",
+      "dateModified": "2026-11-05",
+      "inLanguage": "en-IN",
+      "author": { "@type": "Organization", "name": "Ledger", "url": "https://dmaulikr.github.io/ledger-site/" },
+      "publisher": { "@type": "Organization", "name": "Ledger", "url": "https://dmaulikr.github.io/ledger-site/" },
+      "mainEntityOfPage": "https://dmaulikr.github.io/ledger-site/bank-sms-expense-tracker-iphone.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Ledger", "item": "https://dmaulikr.github.io/ledger-site/" },
+        { "@type": "ListItem", "position": 2, "name": "Bank SMS on iPhone", "item": "https://dmaulikr.github.io/ledger-site/bank-sms-expense-tracker-iphone.html" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<nav class="nav">
+  <span class="brand"><a href="index.html">Ledger</a></span>
+  <span class="links"><a href="https://apps.apple.com/app/id6796905803?pt=128885861&amp;ct=site-sms&amp;mt=8">App Store</a><a href="index.html#guides">Guides</a><a href="support.html">Support</a></span>
+</nav>
+<main class="page">
+<div class="crumbs"><a href="index.html">Ledger</a> › Guides</div>
+<div class="label">Guide · iPhone</div>
+<h1>How to log bank SMS automatically on iPhone</h1>
+<p class="lede">Every UPI or card payment in India sends you a bank SMS. On Android, expense apps read those messages from your inbox. On iPhone they can't, and that's on purpose. Here's what does work, step by step.</p>
+
+<h2>Why iPhone apps can't read your SMS</h2>
+<p>iOS doesn't let any app read your Messages inbox. It's one of the reasons an iPhone is private: no app, however useful, can quietly look through your OTPs and bank alerts.</p>
+<p>So on iPhone there are two honest ways to turn a bank SMS into an expense:</p>
+<ul>
+  <li><strong>Paste it.</strong> Copy the message and paste it into the app, which reads it.</li>
+  <li><strong>Automate it with Shortcuts.</strong> Apple's Shortcuts app can watch for messages that contain certain words and hand <em>just those</em> messages to an app as they arrive. The app still never sees your inbox.</li>
+</ul>
+
+<h2>What's in a bank SMS</h2>
+<p>A typical UPI debit message looks like this:</p>
+<div class="sms">Rs.480.00 debited from A/c XX1234 on 14-10-26 to VPA zomato@icici (UPI Ref No 629012345678)</div>
+<p>It has everything an expense needs: the amount, who you paid, and the date. The wording changes from bank to bank. Some say <strong>debited</strong>, some say <strong>sent</strong>, card alerts often say <strong>spent</strong>, and money in says <strong>credited</strong>. That matters for the automation below.</p>
+<p>The SMS comes from your bank, not from the UPI app, so it doesn't matter whether you paid with GPay, PhonePe, Paytm or your bank's own app. If your bank sends an SMS for the payment, it works.</p>
+
+<h2>Way 1: paste a message (any iPhone)</h2>
+<ol class="steps">
+  <li>In Messages, press and hold the bank SMS, then tap <strong>Copy</strong>.</li>
+  <li>In Ledger, open <strong>Quick log</strong> (the ✦ button) and tap <strong>Paste</strong>.</li>
+  <li>Check what Ledger read (amount, merchant, date and category), then <strong>Save entry</strong>.</li>
+</ol>
+<div class="shots one">
+  <img src="img/08-review.webp" width="600" height="1304" alt="Ledger's Quick log with a pasted bank SMS read as ₹480 to Zomato, paid with UPI, with a note that the same amount was already logged today" loading="lazy">
+</div>
+<p class="caption">Sample data. Ledger reads the SMS on the phone, and points out when the same amount is already in your ledger that day.</p>
+
+<h2>Way 2: log every bank SMS automatically</h2>
+<p>This takes about two minutes, once. You'll need Ledger installed (it runs on iOS 17 or later).</p>
+<ol class="steps">
+  <li>Open the <strong>Shortcuts</strong> app → <strong>Automation</strong> → <strong>New Automation</strong> → <strong>Message</strong>.</li>
+  <li>Set <strong>Message Contains</strong> to <strong>debited</strong>. Add filters for <strong>sent</strong>, <strong>spent</strong> and <strong>credited</strong>, and choose <strong>Any</strong>, so every bank's wording is caught. Choose <strong>Run Immediately</strong>.</li>
+  <li>Add the action <strong>Log a bank message</strong> (Ledger), and set its Message to <strong>Shortcut Input → Content</strong>.</li>
+  <li>That's it. From now on, each matching message is logged as it arrives.</li>
+</ol>
+<p>Messages that aren't payments, like an OTP, a balance alert or an offer, are ignored, even if they contain one of those words. The same message is never logged twice. New entries wait in <strong>To review</strong> on Ledger's Now screen, so you can glance over each one.</p>
+<p class="note">On iOS 27, Ledger can add a ready-made shortcut for you: Settings → Bank messages → Set up automatic logging. If your bank's messages say “sent” or “spent” rather than “debited”, add those words as in step 2.</p>
+
+<h2>Which banks it reads</h2>
+<p>Ledger's reader is tested on messages from HDFC, ICICI, SBI and Kotak, including the “Sent Rs…” style. Most other Indian banks use the same kind of wording. If a message isn't read right, you can correct the entry in To review, or paste the message into Quick log and fix it before saving.</p>
+
+<h2>What stays private</h2>
+<ul>
+  <li>iOS hands Ledger only the text of messages that match your automation. Ledger never reads your inbox.</li>
+  <li>Account and card numbers in the message are never kept.</li>
+  <li>Reading happens on your iPhone, and nothing is sent anywhere. Ledger has no account and no ads.</li>
+</ul>
+
+<div class="cta">
+  <h2>Log bank SMS with Ledger</h2>
+  <p>Free on the App Store, for iPhone with iOS 17 or later.</p>
+  <p><a class="badge" href="https://apps.apple.com/app/id6796905803?pt=128885861&amp;ct=site-sms&amp;mt=8">Get Ledger on the App Store</a></p>
+</div>
+
+<div class="faq">
+<h2>Questions</h2>
+<h3>Will this log OTPs or promotional messages?</h3>
+<p>No. Only messages that read as a payment become entries. An OTP, a balance or an offer is ignored.</p>
+<h3>What if I already typed the expense in myself?</h3>
+<p>Ledger notices the same amount on the same day and flags the new entry in To review, so you can check it.</p>
+<h3>Does the automation need the internet?</h3>
+<p>No. Shortcuts runs on the phone, and so does Ledger's reader.</p>
+</div>
+
+<hr>
+<h2>More guides</h2>
+<ul class="related">
+  <li><a href="house-construction-cost-tracker.html">How to track your house construction cost by category</a></li>
+  <li><a href="wedding-budget-tracker.html">Wedding budget tracker: keep the shaadi apart from the month</a></li>
+</ul>
+</main>
+<footer>
+  © 2026 Ledger · <a href="index.html#guides">Guides</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="support.html">Support</a>
+</footer>
+</body>
+</html>
